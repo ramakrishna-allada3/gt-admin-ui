@@ -1,6 +1,4 @@
-function EditableTable({ data }) {
-    const columns = Object.keys(data[0]);
-
+function EditableTable({ data, columns }) {
     return (
         <table>
             <thead>
@@ -15,7 +13,7 @@ function EditableTable({ data }) {
                 </tr>
             </thead>
             <tbody>
-                {data.map((item, index) => (
+                {data?.map((item, index) => (
                     <tr key={index}>
                         <th key={'checkbox' + index}><input type='checkbox' /></th>
 
