@@ -1,30 +1,33 @@
 import './App.css';
-import EditableTable from './components/Table';
-import React, { useState, useEffect } from 'react';
+import EditableTable from './components/EditableTable';
+import React, { useState, useEffect, useContext } from 'react';
+import { StoreContext } from './store';
 
 function App() {
+	const [store, setStore] = useContext(StoreContext);
 	const [users, setUsers] = useState();
 	const [columns, setColumns] = useState([]);
-	const [data, setData] = useState();
 
 	useEffect(() => {
 		fetch('https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json')
 			.then(res => res.json())
 			.then(data => {
-				setData(data);
+				setStore(state => {
+					return { ...state, users: data }
+				});
 				setUsers(data);
 			});
 	}, []);
 
 	useEffect(() => {
-		setColumns(Object.keys(data?.[0] ? data?.[0] : {}));
-	}, [data]);
+		setColumns(Object.keys(store?.users?.[0] ? store.users[0] : { id: '', name: '', email: '', role: ''}));
+	}, [store]);
 
 	function handleFilterChange(e) {
 		const queryStr = e.target.value;
 		console.log(queryStr);
 		setUsers(
-			data.filter(user =>
+			store.users.filter(user =>
 				user.name.includes(queryStr) || user.email.includes(queryStr) || user.role.includes(queryStr) || !queryStr
 			)
 		);
@@ -36,7 +39,7 @@ function App() {
 				<input placeholder='Search'
 					onChange={handleFilterChange}
 				/>
-				<EditableTable data={users} columns={columns} />
+				<EditableTable data={users} columns={columns} pageSize={10} rowKey={'id'}/>
 			</div>
 		</div>
 	);
