@@ -3,8 +3,26 @@ import { StoreContext } from "../store";
 import Pagination from "./Pagination";
 
 function EditableTable({ data, columns, pageSize, rowKey }) {
-    const [store, setStore] = useContext(StoreContext);
-    const [checkboxStates, setCheckboxStates] = useState({});
+    const pageCount = data?.length / pageSize + 1;
+    const [, setStore] = useContext(StoreContext);
+    const [checkboxStates, setCheckboxStates] = useState({ selectAll: false });
+    const [currentPage, setCurrentPage] = useState(1);
+    let paginatedData = {};
+
+    (function () {
+        let dataCounter = 0;
+        for (let pageCounter = 1; pageCounter < pageCount; pageCounter++) {
+            paginatedData[pageCounter] = [];
+            for (
+                let counter = 0;
+                counter < pageSize && dataCounter < data.length;
+                dataCounter++
+            ) {
+                paginatedData[pageCounter][counter] = data[dataCounter];
+                counter++;
+            }
+        }
+    })();
 
     useEffect(() => {
         console.log(checkboxStates);
@@ -12,7 +30,7 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
 
     function handleSelectAllState(e) {
         setCheckboxStates({ selectAll: e.target.checked });
-        data.forEach((item) =>
+        paginatedData?.[currentPage].forEach((item) =>
             setCheckboxStates((state) => {
                 return { ...state, [item[rowKey]]: e.target.checked };
             })
@@ -26,24 +44,24 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
     }
 
     function handleCommonDeleteClick() {
-        const values = data;
-        if (checkboxStates.selectAll) {
-            values.length = 0;
-        }
-        else {
-            Object.keys(checkboxStates).forEach(key => {
-                if (checkboxStates[key] && key !== 'selectAll') {
-                    values.splice(key, 1);
-                }
-            });
-        }
+        let selectedValues = checkboxStates.selectAll
+            ? paginatedData[currentPage].map((item) => item[rowKey])
+            : paginatedData[currentPage]
+                  .filter((item) => checkboxStates[item[rowKey]])
+                  .map((item) => item[rowKey]);
 
-        // console.log({data});
-        setStore(state => {
-            return { ...state, users: values }
+        setStore((state) => {
+            const users = state.users;
+            const remainingUsers = users.filter(
+                (user) => !selectedValues.includes(user.id)
+            );
+
+            return { ...state, users: remainingUsers };
         });
 
-        // render(state => !state);
+        setCheckboxStates((state) => {
+            return { ...state, selectAll: false };
+        });
     }
 
     return (
@@ -53,7 +71,7 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                     <th key="select-all">
                         <input
                             type="checkbox"
-                            value={checkboxStates["selectAll"]}
+                            checked={checkboxStates?.selectAll}
                             onChange={handleSelectAllState}
                         />
                     </th>
@@ -71,7 +89,7 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                 </tr>
             </thead>
             <tbody>
-                {data?.map((item) => (
+                {paginatedData?.[currentPage]?.map((item) => (
                     <tr key={item[rowKey]}>
                         <th key={"checkbox" + item[rowKey]}>
                             <input
@@ -87,19 +105,31 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                             <td key={value}>{value}</td>
                         ))}
 
-                        <td key={"actions" + item[rowKey]}>Edit and delete</td>
+                        <td key={"actions" + item[rowKey]}>
+                            <button onClick={() => setStore(state => {
+                                const users = state.users;
+                                return { ...state, users: users.filter(user => !(user[rowKey] === item[rowKey])) }                                
+                            })}>Delete</button>
+                        </td>
                     </tr>
                 ))}
 
                 <tr>
                     <td>
-                        <Pagination pageCount={data?.length / pageSize} />
+                        <Pagination
+                            currentPage={currentPage}
+                            pageCount={pageCount}
+                            onPageBtnClick={setCurrentPage}
+                        />
                     </td>
                 </tr>
 
                 <tr>
                     <td>
-                        <button style={{ float: "left" }} onClick={handleCommonDeleteClick}>
+                        <button
+                            style={{ float: "left" }}
+                            onClick={handleCommonDeleteClick}
+                        >
                             Delete
                         </button>
                     </td>

@@ -1,15 +1,41 @@
-function Pagination({ pageCount }) {
+function Pagination({ currentPage, pageCount, onPageBtnClick }) {
     const pageBtns = [];
 
-    for (let counter = 1; counter < pageCount + 0.1; counter++) {
-        pageBtns.push(<button key={counter}>{counter}</button>);
+    for (let counter = 1; counter < pageCount; counter++) {
+        pageBtns.push(
+            <button key={counter} onClick={() => onPageBtnClick(counter)}>
+                {counter}
+            </button>
+        );
     }
 
     return (
         <>
-            <button>{"<"}</button>
+            {pageCount - 1 ? (
+                <button
+                    disabled={!(currentPage - 1)}
+                    onClick={() =>
+                        onPageBtnClick((state) =>
+                            state - 1 ? state - 1 : state
+                        )
+                    }
+                >
+                    {"<"}
+                </button>
+            ) : null}
             {pageBtns.map((pageBtn) => pageBtn)}
-            <button>{">"}</button>
+            {pageCount - 1 ? (
+                <button
+                    disabled={currentPage === Math.floor(pageCount)}
+                    onClick={() =>
+                        onPageBtnClick((state) =>
+                            state + 1 < pageCount ? state + 1 : state
+                        )
+                    }
+                >
+                    {">"}
+                </button>
+            ) : null}
         </>
     );
 }
