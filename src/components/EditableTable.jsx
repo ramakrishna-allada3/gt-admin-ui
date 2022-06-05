@@ -76,7 +76,7 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                         />
                     </th>
 
-                    {columns.map((column) => (
+                    {columns.filter(column => column !== rowKey).map((column) => (
                         <th key={column}>
                             {column.replace(
                                 column.charAt(0),
@@ -101,8 +101,8 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                             />
                         </th>
 
-                        {Object.values(item).map((value) => (
-                            <td key={value}>{value}</td>
+                        {Object.keys(item).filter(key => key !== rowKey).map(key => (
+                            <td key={item[key]}>{item[key]}</td>
                         ))}
 
                         <td key={"actions" + item[rowKey]}>
