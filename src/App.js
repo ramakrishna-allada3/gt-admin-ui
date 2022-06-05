@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 function App() {
 	const [users, setUsers] = useState();
 	const [columns, setColumns] = useState([]);
+	
 	useEffect(() => {
 		fetch('https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json')
 			.then(res => res.json())
