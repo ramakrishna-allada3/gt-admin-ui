@@ -6,6 +6,8 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
     const pageCount = data?.length / pageSize + 1;
     const [, setStore] = useContext(StoreContext);
     const [checkboxStates, setCheckboxStates] = useState({ selectAll: false });
+    const [editStates, setEditStates] = useState({});
+    const [editData, setEditData] = useState({});
     const [currentPage, setCurrentPage] = useState(1);
     let paginatedData = {};
 
@@ -25,8 +27,8 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
     })();
 
     useEffect(() => {
-        console.log(checkboxStates);
-    }, [checkboxStates]);
+        console.log({ checkboxStates, editStates });
+    }, [checkboxStates, editStates]);
 
     function handleSelectAllState(e) {
         setCheckboxStates({ selectAll: e.target.checked });
@@ -40,6 +42,34 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
     function handleRowCheckboxState(e, index) {
         setCheckboxStates((state) => {
             return { ...state, [index]: e.target.checked };
+        });
+    }
+
+    function handleEditClick(item) {
+        setEditStates((state) => {
+            return { ...state, [item[rowKey]]: true };
+        });
+    }
+
+    function handleSaveClick(item) {
+        setEditStates(state => {
+            return { ...state, [item[rowKey]]: false }
+        });
+    }
+
+    function handleCancelClick(item) {
+        setEditStates(state => {
+            return { ...state, [item[rowKey]]: false }
+        });
+    }
+
+    function handleDeleteClick(item) {
+        setStore((state) => {
+            const users = state.users;
+            return {
+                ...state,
+                users: users.filter((user) => !(user[rowKey] === item[rowKey])),
+            };
         });
     }
 
@@ -76,14 +106,16 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                         />
                     </th>
 
-                    {columns.filter(column => column !== rowKey).map((column) => (
-                        <th key={column}>
-                            {column.replace(
-                                column.charAt(0),
-                                column.charAt(0).toUpperCase()
-                            )}
-                        </th>
-                    ))}
+                    {columns
+                        .filter((column) => column !== rowKey)
+                        .map((column) => (
+                            <th key={column}>
+                                {column.replace(
+                                    column.charAt(0),
+                                    column.charAt(0).toUpperCase()
+                                )}
+                            </th>
+                        ))}
 
                     <th key="actions">Actions</th>
                 </tr>
@@ -101,15 +133,24 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                             />
                         </th>
 
-                        {Object.keys(item).filter(key => key !== rowKey).map(key => (
-                            <td key={item[key]}>{item[key]}</td>
-                        ))}
+                        {Object.keys(item)
+                            .filter((key) => key !== rowKey)
+                            .map((key) => (
+                                <td key={item[key]}>
+                                    {editStates[item[rowKey]] ? <input value={item[key]} /> : item[key]}
+                                </td>
+                            ))}
 
                         <td key={"actions" + item[rowKey]}>
-                            <button onClick={() => setStore(state => {
-                                const users = state.users;
-                                return { ...state, users: users.filter(user => !(user[rowKey] === item[rowKey])) }                                
-                            })}>Delete</button>
+                            {!editStates[item[rowKey]] ? <button onClick={() => handleEditClick(item)}>
+                                Edit
+                            </button> : <>
+                            <button onClick={() => handleSaveClick(item)}>Save</button>
+                            <button onClick={() => handleCancelClick(item)}>Cancel</button>
+                            </>}
+                            <button onClick={() => handleDeleteClick(item)}>
+                                Delete
+                            </button>
                         </td>
                     </tr>
                 ))}
