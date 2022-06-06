@@ -7,7 +7,15 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
     const [, setStore] = useContext(StoreContext);
     const [checkboxStates, setCheckboxStates] = useState({ selectAll: false });
     const [editStates, setEditStates] = useState({});
-    const [editData, setEditData] = useState({});
+    const [editData, setEditData] = useState(
+        JSON.parse(
+            JSON.stringify(
+                data?.reduce((final, cur, index) => {
+                    return { ...final, [index + 1]: cur };
+                }, {})
+            )
+        )
+    );
     const [currentPage, setCurrentPage] = useState(1);
     let paginatedData = {};
 
@@ -27,8 +35,8 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
     })();
 
     useEffect(() => {
-        console.log({ checkboxStates, editStates });
-    }, [checkboxStates, editStates]);
+        console.log({ checkboxStates, editStates, editData });
+    }, [checkboxStates, editStates, editData]);
 
     function handleSelectAllState(e) {
         setCheckboxStates({ selectAll: e.target.checked });
@@ -51,24 +59,52 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
         });
     }
 
+    function handleChange(item, key, value) {
+        console.log({ item, key, value });
+        console.log(item[rowKey]);
+        setEditData((state) => {
+            const editItem = state[item[rowKey]];
+            console.log({ editItem });
+            editItem[key] = value;
+            return { ...state, [item[rowKey]]: editItem };
+        });
+    }
+
     function handleSaveClick(item) {
-        setEditStates(state => {
-            return { ...state, [item[rowKey]]: false }
+        setEditStates((state) => {
+            return { ...state, [item[rowKey]]: false };
+        });
+
+        setStore(store => {
+            const savedUserData = store.users.reduce((users, user) => {
+                user = user[rowKey] === item[rowKey] ? editData[item[rowKey]] : user
+                return [... users, user];
+            }, []);
+
+            const savedFilterData = store.filteredUsers.reduce((users, user) => {
+                user = user[rowKey] === item[rowKey] ? editData[item[rowKey]] : user
+                return [... users, user];
+            }, []);
+
+            console.log({savedUserData});
+            return { ...store, users: [...savedUserData], filteredUsers: [...savedFilterData] };
         });
     }
 
     function handleCancelClick(item) {
-        setEditStates(state => {
-            return { ...state, [item[rowKey]]: false }
+        setEditStates((state) => {
+            return { ...state, [item[rowKey]]: false };
         });
     }
 
     function handleDeleteClick(item) {
         setStore((state) => {
             const users = state.users;
+            const filteredUsers = state.filteredUsers;
             return {
                 ...state,
                 users: users.filter((user) => !(user[rowKey] === item[rowKey])),
+                filteredUsers: filteredUsers.filter((user) => !(user[rowKey] === item[rowKey])),
             };
         });
     }
@@ -77,16 +113,20 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
         let selectedValues = checkboxStates.selectAll
             ? paginatedData[currentPage].map((item) => item[rowKey])
             : paginatedData[currentPage]
-                  .filter((item) => checkboxStates[item[rowKey]])
-                  .map((item) => item[rowKey]);
+                  ?.filter((item) => checkboxStates[item[rowKey]])
+                  ?.map((item) => item[rowKey]);
 
         setStore((state) => {
             const users = state.users;
-            const remainingUsers = users.filter(
+            const remainingUsers = users?.filter(
                 (user) => !selectedValues.includes(user.id)
             );
 
-            return { ...state, users: remainingUsers };
+            const remainingFilteredUsers = state.filteredUsers?.filter(
+                (user) => !selectedValues.includes(user.id)
+            );
+
+            return { ...state, users: remainingUsers, filteredUsers: remainingFilteredUsers };
         });
 
         setCheckboxStates((state) => {
@@ -137,17 +177,43 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                             .filter((key) => key !== rowKey)
                             .map((key) => (
                                 <td key={item[key]}>
-                                    {editStates[item[rowKey]] ? <input value={item[key]} /> : item[key]}
+                                    {editStates[item[rowKey]] ? (
+                                        <input
+                                            value={editData[item[rowKey]][key]}
+                                            onChange={(e) => {
+                                                handleChange(
+                                                    item,
+                                                    key,
+                                                    e.target.value
+                                                );
+                                                e.target.focus();
+                                            }}
+                                        />
+                                    ) : (
+                                        item[key]
+                                    )}
                                 </td>
                             ))}
 
                         <td key={"actions" + item[rowKey]}>
-                            {!editStates[item[rowKey]] ? <button onClick={() => handleEditClick(item)}>
-                                Edit
-                            </button> : <>
-                            <button onClick={() => handleSaveClick(item)}>Save</button>
-                            <button onClick={() => handleCancelClick(item)}>Cancel</button>
-                            </>}
+                            {!editStates[item[rowKey]] ? (
+                                <button onClick={() => handleEditClick(item)}>
+                                    Edit
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => handleSaveClick(item)}
+                                    >
+                                        Save
+                                    </button>
+                                    <button
+                                        onClick={() => handleCancelClick(item)}
+                                    >
+                                        Cancel
+                                    </button>
+                                </>
+                            )}
                             <button onClick={() => handleDeleteClick(item)}>
                                 Delete
                             </button>
@@ -157,22 +223,22 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
 
                 <tr>
                     <td>
-                        <Pagination
+                        {pageCount > 0 ? <Pagination
                             currentPage={currentPage}
                             pageCount={pageCount}
                             onPageBtnClick={setCurrentPage}
-                        />
+                        />: null}
                     </td>
                 </tr>
 
                 <tr>
                     <td>
-                        <button
+                        { data.length > 0 ? <button
                             style={{ float: "left" }}
                             onClick={handleCommonDeleteClick}
                         >
                             Delete
-                        </button>
+                        </button> : null}
                     </td>
                 </tr>
             </tbody>

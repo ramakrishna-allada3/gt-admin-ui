@@ -31,6 +31,7 @@ function App() {
 			const filteredUsers = store.users.filter(user =>
 				user.name.includes(queryStr) || user.email.includes(queryStr) || user.role.includes(queryStr) || !queryStr
 			);
+			console.log({filteredUsers});
 			return { ...state, filteredUsers }
 		}
 		);
@@ -42,7 +43,9 @@ function App() {
 				<input placeholder='Search'
 					onChange={handleFilterChange}
 				/>
-				<EditableTable data={store.users} columns={columns} pageSize={10} rowKey={'id'} />
+				{store?.filteredUsers ?
+					<EditableTable data={store.filteredUsers} columns={columns} pageSize={10} rowKey={'id'} /> : null
+				}
 			</div>
 		</div>
 	);
