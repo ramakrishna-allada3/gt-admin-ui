@@ -34,9 +34,9 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
         }
     })();
 
-    useEffect(() => {
-        console.log({ checkboxStates, editStates, editData });
-    }, [checkboxStates, editStates, editData]);
+    // useEffect(() => {
+    //     console.log({ checkboxStates, editStates, editData });
+    // }, [checkboxStates, editStates, editData]);
 
     function handleSelectAllState(e) {
         setCheckboxStates({ selectAll: e.target.checked });
