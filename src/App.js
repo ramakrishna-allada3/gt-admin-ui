@@ -18,7 +18,7 @@ function App() {
 					return { ...state, filteredUsers: data }
 				});
 			});
-	}, []);
+	}, [setStore]);
 
 	useEffect(() => {
 		setColumns(Object.keys(store?.users?.[0] ? store.users[0] : { id: '', name: '', email: '', role: '' }));
