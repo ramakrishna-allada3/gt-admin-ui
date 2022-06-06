@@ -10,7 +10,7 @@ function Pagination({ currentPage, pageCount, onPageBtnClick }) {
     }
 
     return (
-        <div className="d-flex justify-content-center">
+        <div className="d-flex justify-content-center w-75">
             {pageCount - 1 ? (
                 <button
                     className="btn btn-primary rounded-circle mx-2"

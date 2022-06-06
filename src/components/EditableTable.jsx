@@ -124,7 +124,7 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
         });
     }
 
-    function handleCommonDeleteClick() {
+    function handleDeleteSelectedClick() {
         let selectedValues = checkboxStates.selectAll
             ? paginatedData[currentPage].map((item) => item[rowKey])
             : paginatedData[currentPage]
@@ -186,7 +186,14 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                 </thead>
                 <tbody>
                     {paginatedData?.[currentPage]?.map((item) => (
-                        <tr key={item[rowKey]}>
+                        <tr
+                            style={{
+                                backgroundColor: checkboxStates[item[rowKey]]
+                                    ? "#E8E8E8"
+                                    : "",
+                            }}
+                            key={item[rowKey]}
+                        >
                             <th key={"checkbox" + item[rowKey]}>
                                 <input
                                     type="checkbox"
@@ -272,7 +279,17 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                     ))}
                 </tbody>
             </table>
-            <div className="border border-top-0 p-2 mb-2">
+            <div className="d-flex border border-top-0 p-2">
+                {data.length > 0 ? (
+                    <button
+                        className="btn btn-danger rounded-pill"
+                        style={{ float: "left" }}
+                        onClick={handleDeleteSelectedClick}
+                    >
+                        Delete Selected
+                    </button>
+                ) : null}
+
                 {pageCount > 0 ? (
                     <Pagination
                         currentPage={currentPage}
@@ -281,16 +298,8 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                     />
                 ) : null}
             </div>
-
-            {data.length > 0 ? (
-                <button
-                    className="btn btn-danger"
-                    style={{ float: "left" }}
-                    onClick={handleCommonDeleteClick}
-                >
-                    Delete
-                </button>
-            ) : null}
+            <br />
+            <br />
         </>
     );
 }
