@@ -78,12 +78,12 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
         setStore(store => {
             const savedUserData = store.users.reduce((users, user) => {
                 user = user[rowKey] === item[rowKey] ? editData[item[rowKey]] : user
-                return [... users, user];
+                return [...users, user];
             }, []);
 
             const savedFilterData = store.filteredUsers.reduce((users, user) => {
                 user = user[rowKey] === item[rowKey] ? editData[item[rowKey]] : user
-                return [... users, user];
+                return [...users, user];
             }, []);
 
             console.log({savedUserData});
