@@ -40,7 +40,14 @@ function App() {
 	return (
 		<div className="App">
 			<div className='root-container'>
-				<input placeholder='Search'
+				<img 
+				height={86}
+				width={169}
+				src={"https://geektrust.sgp1.cdn.digitaloceanspaces.com/assets/images/adminui-badge.png"} 
+				alt="Admin-UI" 
+				/>
+				<div className='text-primary h5'><strong>Admin-UI</strong></div>
+				<input className='form-control mt-5 mb-3' placeholder='Search'
 					onChange={handleFilterChange}
 				/>
 				{store?.filteredUsers ?

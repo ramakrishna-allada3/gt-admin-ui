@@ -75,19 +75,32 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
             return { ...state, [item[rowKey]]: false };
         });
 
-        setStore(store => {
+        setStore((store) => {
             const savedUserData = store.users.reduce((users, user) => {
-                user = user[rowKey] === item[rowKey] ? editData[item[rowKey]] : user
+                user =
+                    user[rowKey] === item[rowKey]
+                        ? editData[item[rowKey]]
+                        : user;
                 return [...users, user];
             }, []);
 
-            const savedFilterData = store.filteredUsers.reduce((users, user) => {
-                user = user[rowKey] === item[rowKey] ? editData[item[rowKey]] : user
-                return [...users, user];
-            }, []);
+            const savedFilterData = store.filteredUsers.reduce(
+                (users, user) => {
+                    user =
+                        user[rowKey] === item[rowKey]
+                            ? editData[item[rowKey]]
+                            : user;
+                    return [...users, user];
+                },
+                []
+            );
 
-            console.log({savedUserData});
-            return { ...store, users: [...savedUserData], filteredUsers: [...savedFilterData] };
+            console.log({ savedUserData });
+            return {
+                ...store,
+                users: [...savedUserData],
+                filteredUsers: [...savedFilterData],
+            };
         });
     }
 
@@ -104,7 +117,9 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
             return {
                 ...state,
                 users: users.filter((user) => !(user[rowKey] === item[rowKey])),
-                filteredUsers: filteredUsers.filter((user) => !(user[rowKey] === item[rowKey])),
+                filteredUsers: filteredUsers.filter(
+                    (user) => !(user[rowKey] === item[rowKey])
+                ),
             };
         });
     }
@@ -126,7 +141,11 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                 (user) => !selectedValues.includes(user.id)
             );
 
-            return { ...state, users: remainingUsers, filteredUsers: remainingFilteredUsers };
+            return {
+                ...state,
+                users: remainingUsers,
+                filteredUsers: remainingFilteredUsers,
+            };
         });
 
         setCheckboxStates((state) => {
@@ -135,114 +154,144 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
     }
 
     return (
-        <table>
-            <thead>
-                <tr>
-                    <th key="select-all">
-                        <input
-                            type="checkbox"
-                            checked={checkboxStates?.selectAll}
-                            onChange={handleSelectAllState}
-                        />
-                    </th>
-
-                    {columns
-                        .filter((column) => column !== rowKey)
-                        .map((column) => (
-                            <th key={column}>
-                                {column.replace(
-                                    column.charAt(0),
-                                    column.charAt(0).toUpperCase()
-                                )}
-                            </th>
-                        ))}
-
-                    <th key="actions">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {paginatedData?.[currentPage]?.map((item) => (
-                    <tr key={item[rowKey]}>
-                        <th key={"checkbox" + item[rowKey]}>
+        <>
+            <table
+                className="table border"
+                style={{ marginBottom: 0, width: "1000px" }}
+            >
+                <thead className="table-light">
+                    <tr>
+                        <th key="select-all">
                             <input
+                                className="form-check-input"
                                 type="checkbox"
-                                checked={checkboxStates[item[rowKey]]}
-                                onChange={(e) =>
-                                    handleRowCheckboxState(e, item[rowKey])
-                                }
+                                checked={checkboxStates?.selectAll}
+                                onChange={handleSelectAllState}
                             />
                         </th>
 
-                        {Object.keys(item)
-                            .filter((key) => key !== rowKey)
-                            .map((key) => (
-                                <td key={item[key]}>
-                                    {editStates[item[rowKey]] ? (
-                                        <input
-                                            value={editData[item[rowKey]][key]}
-                                            onChange={(e) => {
-                                                handleChange(
-                                                    item,
-                                                    key,
-                                                    e.target.value
-                                                );
-                                                e.target.focus();
-                                            }}
-                                        />
-                                    ) : (
-                                        item[key]
+                        {columns
+                            .filter((column) => column !== rowKey)
+                            .map((column) => (
+                                <th key={column}>
+                                    {column.replace(
+                                        column.charAt(0),
+                                        column.charAt(0).toUpperCase()
                                     )}
-                                </td>
+                                </th>
                             ))}
 
-                        <td key={"actions" + item[rowKey]}>
-                            {!editStates[item[rowKey]] ? (
-                                <button onClick={() => handleEditClick(item)}>
-                                    Edit
-                                </button>
-                            ) : (
-                                <>
-                                    <button
-                                        onClick={() => handleSaveClick(item)}
-                                    >
-                                        Save
-                                    </button>
-                                    <button
-                                        onClick={() => handleCancelClick(item)}
-                                    >
-                                        Cancel
-                                    </button>
-                                </>
-                            )}
-                            <button onClick={() => handleDeleteClick(item)}>
-                                Delete
-                            </button>
-                        </td>
+                        <th key="actions">Actions</th>
                     </tr>
-                ))}
+                </thead>
+                <tbody>
+                    {paginatedData?.[currentPage]?.map((item) => (
+                        <tr key={item[rowKey]}>
+                            <th key={"checkbox" + item[rowKey]}>
+                                <input
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={checkboxStates[item[rowKey]]}
+                                    onChange={(e) =>
+                                        handleRowCheckboxState(e, item[rowKey])
+                                    }
+                                />
+                            </th>
 
-                <tr>
-                    <td>
-                        {pageCount > 0 ? <Pagination
-                            currentPage={currentPage}
-                            pageCount={pageCount}
-                            onPageBtnClick={setCurrentPage}
-                        />: null}
-                    </td>
-                </tr>
+                            {Object.keys(item)
+                                .filter((key) => key !== rowKey)
+                                .map((key) => (
+                                    <td key={item[key]}>
+                                        {editStates[item[rowKey]] ? (
+                                            <input
+                                                className="form-control"
+                                                value={
+                                                    editData[item[rowKey]][key]
+                                                }
+                                                onChange={(e) => {
+                                                    handleChange(
+                                                        item,
+                                                        key,
+                                                        e.target.value
+                                                    );
+                                                    e.target.focus();
+                                                }}
+                                            />
+                                        ) : (
+                                            item[key]
+                                        )}
+                                    </td>
+                                ))}
 
-                <tr>
-                    <td>
-                        { data.length > 0 ? <button
-                            style={{ float: "left" }}
-                            onClick={handleCommonDeleteClick}
-                        >
-                            Delete
-                        </button> : null}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                            <td key={"actions" + item[rowKey]}>
+                                {!editStates[item[rowKey]] ? (
+                                    <>
+                                        <span
+                                            className="px-2"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={() =>
+                                                handleEditClick(item)
+                                            }
+                                        >
+                                            <i className="bi bi-pencil-square"></i>
+                                        </span>
+                                        <span
+                                            className="px-2"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={() =>
+                                                handleDeleteClick(item)
+                                            }
+                                        >
+                                            <i className="bi bi-trash text-danger"></i>
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span
+                                            style={{ cursor: "pointer" }}
+                                            className="text-success px-2"
+                                            onClick={() =>
+                                                handleSaveClick(item)
+                                            }
+                                        >
+                                            <i className="bi bi-check-circle-fill"></i>
+                                        </span>
+                                        <span
+                                            style={{ cursor: "pointer" }}
+                                            className="text-danger px2"
+                                            onClick={() =>
+                                                handleCancelClick(item)
+                                            }
+                                        >
+                                            <i className="bi bi-x-circle-fill"></i>
+                                        </span>
+                                    </>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            <div className="border border-top-0 p-2 mb-2">
+                {pageCount > 0 ? (
+                    <Pagination
+                        currentPage={currentPage}
+                        pageCount={pageCount}
+                        onPageBtnClick={setCurrentPage}
+                    />
+                ) : null}
+            </div>
+
+            {data.length > 0 ? (
+                <button
+                    className="btn btn-danger"
+                    style={{ float: "left" }}
+                    onClick={handleCommonDeleteClick}
+                >
+                    Delete
+                </button>
+            ) : null}
+        </>
     );
 }
 
