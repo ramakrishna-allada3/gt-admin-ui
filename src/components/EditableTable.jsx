@@ -79,7 +79,7 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
             const savedUserData = store.users.reduce((users, user) => {
                 user =
                     user[rowKey] === item[rowKey]
-                        ? editData[item[rowKey]]
+                        ? { ...editData[item[rowKey]] }
                         : user;
                 return [...users, user];
             }, []);
@@ -88,7 +88,7 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
                 (users, user) => {
                     user =
                         user[rowKey] === item[rowKey]
-                            ? editData[item[rowKey]]
+                            ? { ...editData[item[rowKey]] }
                             : user;
                     return [...users, user];
                 },
@@ -105,6 +105,15 @@ function EditableTable({ data, columns, pageSize, rowKey }) {
     }
 
     function handleCancelClick(item) {
+        setEditData(
+            JSON.parse(
+                JSON.stringify(
+                    data?.reduce((final, cur, index) => {
+                        return { ...final, [index + 1]: cur };
+                    }, {})
+                )
+            )
+        );
         setEditStates((state) => {
             return { ...state, [item[rowKey]]: false };
         });
